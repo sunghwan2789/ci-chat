@@ -54,7 +54,7 @@ ROOT_URLCONF = 'ci_chat.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['ci_chat/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
