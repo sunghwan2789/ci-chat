@@ -5,7 +5,7 @@ public class Chat {
     String chatContent;
     String chaTime;
     
-    public String getChaName(){
+    public String getChaName() {
         return chaName;
     }
     
@@ -17,7 +17,7 @@ public class Chat {
         return chatContent;
     }
     
-    public void setChaContetn(String chatContetn) {
+    public void setChaContetn(String chatContetn() {
         this chatContent = chaContent;
     }
     
