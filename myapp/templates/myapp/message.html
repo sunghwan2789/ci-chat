@@ -1,0 +1,28 @@
+{% load static %}
+
+{% comment %}
+datetime formatting: https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date
+{% endcomment %}
+
+{% ifchanged %}
+<div class="row">
+    <div class="col-lg-12">
+        <p class="text-center text-muted small">{{ message.date | date:'Y년 n월 j일' }}</p>
+    </div>
+</div>
+{% endifchanged %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="media">
+            <a class="pull-left" href="#">
+               <img class="media-object img-circle img-chat" src="{% static 'images/profile.png' %}">
+            </a>
+            <div class="media-body">
+                <h4 class="media-heading">{{ message.name }}</h4>
+                <span class="small pull-right">{{ message.date | date:'A g:i' }}</span>
+            </div>
+            <p>{{ message.text }}</p>
+        </div>   
+    </div>
+</div>
+<hr />
