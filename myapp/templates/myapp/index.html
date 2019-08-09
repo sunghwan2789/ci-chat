@@ -24,9 +24,12 @@
                             </div>
                             <div id="chat" class="panel-collapse collapse in">
                                 <div class="portlet-body chat-widget" style="overflow-y: auto; width: auto; height: 300px">
-                                    {% for message in messages %}
-                                        {% include './message.html' with message=message %}
-                                    {% endfor %}
+                                {% for message in messages %}
+                                    {% ifchanged %}
+                                        {% include './messagedate.html' with message=message %}
+                                    {% endifchanged %}
+                                    {% include './message.html' with message=message %}
+                                {% endfor %}
                                 </div>
                             </div>
                             <div class="portlet-footer">
