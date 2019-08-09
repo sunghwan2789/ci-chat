@@ -12,10 +12,10 @@ datetime formatting: https://docs.djangoproject.com/en/dev/ref/templates/builtin
             </a>
             <div class="media-body">
                 <div class="d-flex">
-                    <h4 class="flex-grow-1">{{ message.name }}</h4>
-                    <span class="small">{{ message.date | date:'A g:i' }}</span>
+                    <h4 class="flex-grow-1">{{ message.handle }}</h4>
+                    <span class="small">{{ message.timestamp | date:'A g:i' }}</span>
                 </div>
-                <p class="mb-0">{{ message.text }}</p>
+                <p class="mb-0">{{ message.message }}</p>
             </div>
         </div>
     </div>
