@@ -5,17 +5,19 @@ datetime formatting: https://docs.djangoproject.com/en/dev/ref/templates/builtin
 {% endcomment %}
 
 <div class="row">
-    <div class="col-lg-12">
+    <div class="col">
         <div class="media">
-            <a class="pull-left" href="#">
+            <a class="mr-2" href="#">
                <img class="media-object img-circle img-chat" src="{% static 'images/profile.png' %}">
             </a>
             <div class="media-body">
-                <h4 class="media-heading">{{ message.name }}</h4>
-                <span class="small pull-right">{{ message.date | date:'A g:i' }}</span>
+                <div class="d-flex">
+                    <h4 class="flex-grow-1">{{ message.name }}</h4>
+                    <span class="small">{{ message.date | date:'A g:i' }}</span>
+                </div>
+                <p class="mb-0">{{ message.text }}</p>
             </div>
-            <p>{{ message.text }}</p>
-        </div>   
+        </div>
     </div>
 </div>
 <hr />

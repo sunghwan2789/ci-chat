@@ -1,55 +1,55 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html class="h-100">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap-4.3.1-dist/css/bootstrap.min.css' %}">
         <link rel="stylesheet" href="{% static 'css/custom.css' %}">
         <title>ci_chat</title>
         <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
-        <script src="{% static 'js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'bootstrap-4.3.1-dist/js/bootstrap.min.js' %}"></script>
     </head>
-    <body>
-        <div class="container">
-            <div class="container bootstrap snippet">
+    <body class="h-100">
+        <div class="h-100 d-flex flex-column portlet portlet-default mb-0">
+            <div class="portlet-heading">
+                <div class="portlet-title">
+                    <h4><i class="ja ja-circle text-green"></i>실시간 채팅방</h4>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div id="chat" class="flex-grow-1 overflow-auto container-fluid">
+            {% for message in messages %}
+                {% ifchanged %}
+                    {% include './messagedate.html' with message=message %}
+                {% endifchanged %}
+                {% include './message.html' with message=message %}
+            {% endfor %}
+            </div>
+            <div class="portlet-footer">
                 <div class="row">
-                    <div class="col-xs-12">
-                        <div class="portlet portlet-default">
-                            <div class="portlet-heading">
-                                <div class="portlet-title">
-                                    <h4><i class="ja ja-circle text-green"></i>실시간 채팅방</h4>
-                                </div>
-                                <div class="clearfix"></div>
-                            </div>
-                            <div id="chat" class="panel-collapse collapse in">
-                                <div class="portlet-body chat-widget" style="overflow-y: auto; width: auto; height: 300px">
-                                {% for message in messages %}
-                                    {% ifchanged %}
-                                        {% include './messagedate.html' with message=message %}
-                                    {% endifchanged %}
-                                    {% include './message.html' with message=message %}
-                                {% endfor %}
-                                </div>
-                            </div>
-                            <div class="portlet-footer">
-                                <div class="row">
-                                    <div class="form-group col-xs-4">
-                                        <input style="height: 40px;" type="text" id="charName" class="form-control" placeholder="이름" maxlength="20">
-                                    </div>
-                                </div>
-                                <div class="row" style="height: 90px">
-                                    <div class="form-group col-xs-10">
-                                        <textarea style="height: 80px;" id="chatContent" class="form-control" placeholder="메시지를 입력하세요" maxlength="100"></textarea>
-                                    </div>
-                                    <div class="form-group col-xs-2">
-                                        <button type="button" class="btn btn-default pull-right" onclick="subitFunction();">전송</button>
-                                        <div class="clearfix"></div>
-                                    </div>                                                                                                  
-                                </div>
-                            </div> 
-                        </div>
-                    </div>    
+                    <div class="form-group col-4">
+                        <input type="text" id="charName" class="form-control" placeholder="이름" maxlength="20">
+                    </div>
+                    <!-- <div>
+                        <select name="code">
+                            <option value="">선택</option>
+                            <option value="morse">모스부호</option>
+                            <option value="v2">.</option>
+                            <option value="v3">.</option>
+                        </select>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-white btn-block" style="height:100%" onclick="#">변환</button>
+                    </div> -->
+                </div>
+                <div class="row" style="height: 90px">
+                    <div class="form-group col-10">
+                        <textarea id="chatContent" class="form-control h-100" placeholder="메시지를 입력하세요" maxlength="100"></textarea>
+                    </div>
+                    <div class="form-group col-2">
+                        <button type="button" class="btn btn-white btn-block h-100">전송</button>
+                    </div>
                 </div>
             </div>
         </div>
