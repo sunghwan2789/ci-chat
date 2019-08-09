@@ -9,7 +9,8 @@ from .models import Room
 
 def about(request):
     return render(request, "chat/about.html")
-	
+
+haikunator = Haikunator()
 def new_room(request):
     """
     Randomly create a new room, and redirect to it.
@@ -17,7 +18,7 @@ def new_room(request):
     new_room = None
     while not new_room:
         with transaction.atomic():
-            label = Haikunator.haikunate()
+            label = haikunator.haikunate()
             if Room.objects.filter(label = label).exists() :
                 continue
             new_room = Room.objects.create(label = label)
