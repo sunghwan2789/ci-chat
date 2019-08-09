@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html class="h-100">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="{% static 'bootstrap-4.3.1-dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+        <title>ci_chat</title>
+        <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
+        <script src="{% static 'bootstrap-4.3.1-dist/js/bootstrap.min.js' %}"></script>
+        <script>
+            const urlbase = '{% url "chat_room" "__label__" %}'
+            const onSubmit = (e) => {
+                e.preventDefault();
+                location = urlbase.replace(/__label__/g, form.id.value);
+            }
+        </script>
+    </head>
+    <body class="h-100">
+        <div class="h-100 d-flex">
+            <div class="m-auto col col-sm-10 col-md-8 col-lg-6">
+                <form id="form" onsubmit="onSubmit(...arguments)">
+                    <div class="form-group">
+                        <label for="id">채팅방 ID</label>
+                        <input type="text" class="form-control" id="id" name="id" placeholder="cold-apple-2789">
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            입장
+                        </button>
+                    </div>
+                </form>
+                <hr />
+                <a href="{% url 'new_room' %}" class="btn btn-secondary btn-block">
+                    새로운 방 만들기
+                </a>
+            </div>
+        </div>
+    </body>
+</html>
