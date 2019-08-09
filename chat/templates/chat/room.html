@@ -9,10 +9,12 @@
         <title>ci_chat</title>
         <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
         <script src="{% static 'bootstrap-4.3.1-dist/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/chat.js' %}"></script>
+        <script src="{% static 'js/reconnecting-websocket.min.js' %}"></script>
         <script>
             const onSubmit = (e) => {
                 e.preventDefault()
-                
+
             }
         </script>
     </head>
@@ -34,27 +36,23 @@
             </div>
             <div class="portlet-footer">
             <form id="form" onsubmit="onSubmit(...arguments)">
-                <div class="row">
-                    <div class="form-group col-4">
+                <div class="form-row">
+                    <div class="col-4">
                         <input type="text" id="holder" name="holder" class="form-control" placeholder="이름" maxlength="20">
                     </div>
-                    <!-- <div>
-                        <select name="code">
+                    <div class="col">
+                        <select class="form-control d-inline-block w-auto" id="code" name="code">
                             <option value="">선택</option>
                             <option value="morse">모스부호</option>
-                            <option value="v2">.</option>
-                            <option value="v3">.</option>
                         </select>
+                        <button type="button" class="btn btn-white">암호화</button>
                     </div>
-                    <div>
-                        <button type="button" class="btn btn-white btn-block" style="height:100%" onclick="#">변환</button>
-                    </div> -->
                 </div>
-                <div class="row" style="height: 90px">
-                    <div class="form-group col-10">
+                <div class="form-row" style="height: 90px">
+                    <div class="col-10">
                         <textarea id="message" name="message" class="form-control h-100" placeholder="메시지를 입력하세요" maxlength="100"></textarea>
                     </div>
-                    <div class="form-group col-2">
+                    <div class="col-2">
                         <button type="submit" class="btn btn-white btn-block h-100">전송</button>
                     </div>
                 </div>
