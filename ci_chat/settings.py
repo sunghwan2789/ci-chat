@@ -38,17 +38,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp.apps.MyappConfig',
     'chat.apps.ChatConfig',
 ]
 
+# Channels
+ASGI_APPLICATION = 'ci_chat.routing.application'
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
         },
-        "ROUTING": "chat.routing.channel_routing",
     },
 }
 
@@ -82,8 +82,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'ci_chat.wsgi.application'
-ASGI_APPLICATION = 'chat.asgi.application'
+WSGI_APPLICATION = 'ci_chat.wsgi.application'
 
 
 # Database

@@ -9,20 +9,12 @@
         <title>ci_chat</title>
         <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
         <script src="{% static 'bootstrap-4.3.1-dist/js/bootstrap.min.js' %}"></script>
-        <script src="{% static 'js/chat.js' %}"></script>
-        <script src="{% static 'js/reconnecting-websocket.min.js' %}"></script>
-        <script>
-            const onSubmit = (e) => {
-                e.preventDefault()
-
-            }
-        </script>
     </head>
     <body class="h-100">
         <div class="h-100 d-flex flex-column portlet portlet-default mb-0">
             <div class="portlet-heading">
                 <div class="portlet-title">
-                    <h4>실시간 채팅방 @ <a href="{% url 'chat_room' room.label %}">{{ room.label }}</a></h4>
+                    <h4>실시간 채팅방 @ <a href="{% url 'room' room_name %}">{{ room_name }}</a></h4>
                 </div>
                 <div class="clearfix"></div>
             </div>
@@ -35,7 +27,7 @@
             {% endfor %}
             </div>
             <div class="portlet-footer">
-            <form id="form" onsubmit="onSubmit(...arguments)">
+            <form id="chatform">
                 <div class="form-row">
                     <div class="col-4">
                         <input type="text" id="holder" name="holder" class="form-control" placeholder="이름" maxlength="20">
@@ -45,7 +37,7 @@
                             <option value="">선택</option>
                             <option value="morse">모스부호</option>
                         </select>
-                        <button type="button" class="btn btn-white">암호화</button>
+                        <button type="button" class="btn btn-white" id="encrypt">암호화</button>
                     </div>
                 </div>
                 <div class="form-row" style="height: 90px">
@@ -53,11 +45,139 @@
                         <textarea id="message" name="message" class="form-control h-100" placeholder="메시지를 입력하세요" maxlength="100"></textarea>
                     </div>
                     <div class="col-2">
-                        <button type="submit" class="btn btn-white btn-block h-100">전송</button>
+                        <button id="submit" type="submit" class="btn btn-white btn-block h-100">전송</button>
                     </div>
                 </div>
             </form>
             </div>
         </div>
+        <script id="message-template" type="text/template">
+            {% include './message.html' %}
+        </script>
+        <script>
+            var ciphers = {
+                'morse': (function () {
+                    var table =
+                     {
+                          "A" : ".-",   "K" : "-.-",  "U" : "..-",   "5" : ".....",  "," : "--..--", "$" : "...-..-",
+                          "B" : "-...", "L" : ".-..", "V" : "...-",  "6" : "-....",  "?" : "..--..", " " : "*",
+                          "C" : "-.-.", "M" : "--",   "W" : ".--",   "7" : "--...",  "(" : "-.--.",
+                          "D" : "-..",  "N" : "-.",   "X" : "-..-",  "8" : "---..",  ")" : "-.--.-",
+                          "E" : ".",    "O" : "---",  "Y" : "-.--",  "9" : "----.",  "-" : "-....-",
+                          "F" : "..-.", "P" : ".--.", "Z" : "--..",  "0" : "-----",  "\"" : ".-..-.",
+                          "G" : "--.",  "Q" : "--.-", "1" : ".----", "/" : "-..-.",  "_" : "..--.-",
+                          "H" : "....", "R" : ".-.",  "2" : "..---", "+" : ".-.-.",  "'" : ".----.",
+                          "I" : "..",   "S" : "...",  "3" : "...--", "=" : "-...-",  ":" : "---...",
+                          "J" : ".---", "T" : "-",    "4" : "....-", "." : ".-.-.-", ";" : "-.-.-."
+                      };
+                    function go()
+                     {
+                        var output = "";
+                        var input  = document.forms[0].message.value.toUpperCase();
+
+                        for( var i = 0; i < input.length; i++ )
+                        {
+                           var temp = table[ input.charAt(i) ];
+                           if( temp )
+                            {
+                               if( "*" == temp )
+                                 {
+                                    temp = " ";
+                                 }
+                               output += temp + " ";
+                             }
+                           else output += "  ";
+                         }
+
+                         document.forms[0].message.value = output;
+                      }
+
+                    function ungo(htmlElement)
+                    {
+                       var output = "";
+                       var input  = htmlElement.textContent.replace( /   /g, " * " ).split( " " );
+
+                      for( var ix = 0; ix < input.length; ix++ )
+                      {
+                        for( var key in table )
+                        {
+                         if( table[key] == input[ix])
+                           {
+                             output += key;
+                             break;
+                           }
+                         }
+                      }
+
+                      htmlElement.textContent = output;
+                     }
+                    return {
+                        'go': go,
+                        'ungo': ungo,
+                    }
+                })(),
+            };
+        </script>
+        <script>
+            var roomName = {{ room_name_json }};
+
+            var chatSocket = new WebSocket(
+                'ws://' + window.location.host +
+                '/ws/chat/' + roomName + '/');
+
+            chatSocket.onmessage = function(e) {
+                var data = JSON.parse(e.data);
+                var holder = data['holder'];
+                var message = data['message'];
+                var timestamp = data['timestamp'];
+                var chat = $($('#message-template').text());
+
+                chat.find('h4').text(holder);
+                chat.find('span').text(timestamp);
+                chat.find('p').text(message);
+                chat.appendTo('#chat')
+            };
+
+            chatSocket.onclose = function(e) {
+                console.error('Chat socket closed unexpectedly');
+            };
+
+            document.querySelector('#message').focus();
+            document.querySelector('#message').onkeydown = function(e) {
+                if (e.keyCode === 13) {  // enter, return
+                    document.querySelector('#submit').click();
+                }
+            };
+
+            document.querySelector('#chatform').onsubmit = function(e) {
+                e.preventDefault();
+                var holder = $('#holder').val();
+                var messageInputDom = document.querySelector('#message');
+                var message = messageInputDom.value;
+                chatSocket.send(JSON.stringify({
+                    'holder': holder,
+                    'message': message,
+                }));
+
+                messageInputDom.value = '';
+            };
+            
+            $('#encrypt').on('click', function (e) {
+                e.preventDefault();
+                var ci = ciphers[chatform.code.value];
+                if (typeof ci !== 'undefined') {
+                    ci.go();
+                }
+            })
+            
+            $(document).on('click', '.decrypt', function (e) {
+                e.preventDefault();
+                var $select = $(this).prev();
+                var ci = ciphers[$select.val()];
+                if (typeof ci !== 'undefined') {
+                    ci.ungo($(this).closest('.media-body').find('p')[0]);
+                }
+            })
+        </script>
     </body>
 </html>

@@ -1,84 +1,54 @@
-import re
-import json
-import logging
-from channels import Channel, Group
-from channels.sessions import channel_session
 from .models import Room, Message
+from django.utils import timezone
+from channels.generic.websocket import AsyncWebsocketConsumer
+import json
 
-from django.http import HttpResponse
-from channels.handler import AsgiHandler
-from channels.auth import http_session_user, channel_session_user, channel_session_user_from_http
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'chat_%s' % self.room_name
 
-log = logging.getLogger(__name__)
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        await self.accept()
 
-@channel_session
-def ws_connect(message):
-    # Extract the room from the message. This expects message.path to be of the
-    # form /chat/{label}/, and finds a Room if the message path is applicable,
-    # and if the Room exists. Otherwise, bails (meaning this is a some othersort
-    # of websocket). So, this is effectively a version of _get_object_or_404.
-    try:
-        prefix, label = message['path'].strip('/').split('/')
-        if prefix != 'chat':
-            log.debug('invalid ws path=%s', message['path'])
-            return
-        room = Room.objects.get(label=label)
-    except ValueError:
-        log.debug('invalid ws path=%s', message['path'])
-        return
-    except Room.DoesNotExist:
-        log.debug('ws room does not exist label=%s', label)
-        return
+    async def disconnect(self, close_code):
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
 
-    log.debug('chat connect room=%s client=%s:%s path=%s reply_channel=%s',
-        room.label, message['client'][0], message['client'][1], message['path'], message.reply_channel)
+    # Receive message from WebSocket
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json['message']
+        holder = text_data_json['holder']
+        timestamp = str(timezone.now())
 
-    # Need to be explicit about the channel layer so that testability works
-    # This may be a FIXME?
-    message.reply_channel.send({"accept": True})
-    Group('chat-'+label, channel_layer=message.channel_layer).add(message.reply_channel)
+        # Send message to room group
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message,
+                'holder': holder,
+                'timestamp': timestamp,
+            }
+        )
 
-    message.channel_session['room'] = room.label
+    # Receive message from room group
+    async def chat_message(self, event):
+        message = event['message']
+        holder = event['holder']
+        timestamp = event['timestamp']
 
-@channel_session
-def ws_receive(message):
-    # Look up the room from the channel session, bailing if it doesn't exist
-    try:
-        label = message.channel_session['room']
-        room = Room.objects.get(label=label)
-        log.debug('recieved message, room exist label=%s', room.label)
-    except KeyError:
-        log.debug('no room in channel_session')
-        return
-    except Room.DoesNotExist:
-        log.debug('recieved message, buy room does not exist label=%s', label)
-        return
-
-    # Parse out a chat message from the content text, bailing if it doesn't
-    # conform to the expected message format.
-    try:
-        data = json.loads(message['text'])
-    except ValueError:
-        log.debug("ws message isn't json text=%s", message['text'])
-        return
-
-    if set(data.keys()) != set(('handle', 'message')):
-        log.debug("ws message unexpected format data=%s", data)
-        return
-
-    if data:
-        log.debug('chat message room=%s handle=%s message=%s',
-            room.label, data['handle'], data['message'])
-        m = room.messages.create(**data)
-
-        # See above for the note about Group
-        Group('chat-'+label, channel_layer=message.channel_layer).send({'text': json.dumps(m.as_dict())})
-
-@channel_session
-def ws_disconnect(message):
-    try:
-        label = message.channel_session['room']
-        room = Room.objects.get(label=label)
-        Group('chat-'+label, channel_layer=message.channel_layer).discard(message.reply_channel)
-    except (KeyError, Room.DoesNotExist):
-        pass
+        # Send message to WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message,
+            'holder': holder,
+            'timestamp': timestamp,
+        }))

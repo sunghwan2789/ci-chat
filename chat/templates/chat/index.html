@@ -10,7 +10,7 @@
         <script src="{% static 'js/jquery-3.4.1.min.js' %}"></script>
         <script src="{% static 'bootstrap-4.3.1-dist/js/bootstrap.min.js' %}"></script>
         <script>
-            const urlbase = '{% url "chat_room" "__label__" %}'
+            const urlbase = '{% url "room" "__label__" %}'
             const onSubmit = (e) => {
                 e.preventDefault();
                 location = urlbase.replace(/__label__/g, form.id.value);
@@ -31,10 +31,6 @@
                         </button>
                     </div>
                 </form>
-                <hr />
-                <a href="{% url 'new_room' %}" class="btn btn-secondary btn-block">
-                    새로운 방 만들기
-                </a>
             </div>
         </div>
     </body>
